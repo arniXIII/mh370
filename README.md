@@ -2,6 +2,8 @@
 
 **Version 1.0 · 20 November 2026 · Independent analysis, not peer-reviewed.**
 
+![Overview: searched seabed along the 7th arc, debris finds and the most likely area](docs/overview.png)
+
 An interactive map and a reproducible Bayesian calculation of where MH370 could still be along the 7th arc, given the seabed areas that have already been searched (ATSB 2014–17, Ocean Infinity 2018, Ocean Infinity 2025–26) and the debris found on African and Indian Ocean shores.
 
 - **Map:** `index.html` (served via GitHub Pages)
