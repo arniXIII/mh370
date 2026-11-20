@@ -1,0 +1,6 @@
+data/caption/
+out/*.npy
+out/*.npz
+__pycache__/
+node_modules/
+test.html

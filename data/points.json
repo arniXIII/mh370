@@ -1,0 +1,50 @@
+{
+"debris": [
+ {"n":1,"d":"2015-07-29","part":"Right flaperon","site":"Saint-André, Réunion","lat":-20.93,"lon":55.66,"c":"confirmed","note":"The official list gives the location as Saint-Denis, La Réunion."},
+ {"n":2,"d":"2015-12-27","part":"Right wing No. 7 flap support fairing","site":"Daghatane Beach (near Xai-Xai), Mozambique","lat":-25.08,"lon":33.72,"c":"almost"},
+ {"n":3,"d":"2016-02-27","part":"Right horizontal stabilizer panel (\"NO STEP\")","site":"Paluma Sandbank, Vilankulo, Mozambique","lat":-21.98,"lon":35.36,"c":"almost"},
+ {"n":4,"d":"2016-03-22","part":"Engine nose cowl (Rolls-Royce stencil)","site":"Klein Brak River mouth, Mossel Bay, South Africa","lat":-34.09,"lon":22.15,"c":"almost"},
+ {"n":5,"d":"2016-03-30","part":"Door R1 stowage closet panel","site":"Rodrigues, Mauritius","lat":-19.70,"lon":63.40,"c":"almost"},
+ {"n":6,"d":"2016-04-24","part":"Right engine fan cowling","site":"South of Chidenguele, Mozambique","lat":-24.98,"lon":34.27,"c":"almost"},
+ {"n":7,"d":"2016-04-30","part":"Wing-to-body fairing","site":"Anvil Bay, Chemucane, Mozambique","lat":-26.27,"lon":32.93,"c":"likely"},
+ {"n":8,"d":"2016-05-24","part":"No. 1 flap support fairing tail cone","site":"Gris Gris Beach, Mauritius","lat":-20.52,"lon":57.53,"c":"highly"},
+ {"n":9,"d":"2016-05-22","part":"Left wing trailing edge panel","site":"Macaneta Peninsula, Mozambique","lat":-25.72,"lon":32.78,"c":"highly"},
+ {"n":10,"d":"2016-05-10","part":"Left outboard flap section","site":"Île aux Bernaches, Mauritius","lat":-20.15,"lon":57.79,"c":"confirmed"},
+ {"n":11,"d":"2016-06-06","part":"Seat-back trim panel (IFE monitor)","site":"Riake Beach, Nosy Boraha, Madagascar","lat":-16.88,"lon":49.92,"c":"highly"},
+ {"n":12,"d":"2016-06-06","part":"Bottom panel of wing or horizontal stabilizer","site":"Riake Beach, Nosy Boraha, Madagascar","lat":-16.88,"lon":49.92,"c":"likely"},
+ {"n":13,"d":"2016-06-12","part":"Unidentified part","site":"Riake Beach, Nosy Boraha, Madagascar","lat":-16.88,"lon":49.92,"c":"unid"},
+ {"n":14,"d":"2016-06-12","part":"Unidentified part","site":"Riake Beach, Nosy Boraha, Madagascar","lat":-16.88,"lon":49.92,"c":"unid"},
+ {"n":15,"d":"2016-06-06","part":"Right wing trailing edge panel","site":"Riake Beach, Nosy Boraha, Madagascar","lat":-16.88,"lon":49.92,"c":"highly"},
+ {"n":16,"d":"2016-06-12","part":"Cabin interior panel","site":"Antsiraka Beach, Madagascar","lat":-16.95,"lon":49.72,"c":"almost","note":"The exact position of the Antsiraka Peninsula was not verified; the marker is approximate."},
+ {"n":17,"d":"2016-06-12","part":"Unidentified part","site":"Antsiraka Beach, Madagascar","lat":-16.95,"lon":49.72,"c":"unid"},
+ {"n":18,"d":"2016-06-12","part":"Right forward nose landing gear door","site":"Antsiraka Beach, Madagascar","lat":-16.95,"lon":49.72,"c":"highly"},
+ {"n":19,"d":"2016-06-20","part":"Right outboard flap","site":"Pemba Island, Tanzania","lat":-5.15,"lon":39.83,"c":"confirmed"},
+ {"n":20,"d":"2016-06-21","part":"Right aft wing-to-body fairing","site":"Kosi Bay Mouth, KwaZulu-Natal, South Africa","lat":-26.90,"lon":32.89,"c":"highly"},
+ {"n":21,"d":"2016-07-18","part":"Unidentified part","site":"Northern KwaZulu-Natal, South Africa","lat":-27.45,"lon":32.72,"c":"unid"},
+ {"n":22,"d":"2016-08-26","part":"Right vertical stabilizer panel","site":"Linga Linga Beach, Mozambique","lat":-23.72,"lon":35.41,"c":"almost"},
+ {"n":23,"d":"2016-10","part":"Unidentified part","site":"Riake Beach, Nosy Boraha, Madagascar","lat":-16.88,"lon":49.92,"c":"unid"},
+ {"n":24,"d":"2016-02","part":"Unidentified part","site":"Sainte-Luce, Madagascar","lat":-24.77,"lon":47.18,"c":"unid"},
+ {"n":25,"d":"2016-07","part":"Unidentified part","site":"Riake Beach, Nosy Boraha, Madagascar","lat":-16.88,"lon":49.92,"c":"unid"},
+ {"n":26,"d":"2016-12-23","part":"Right aileron","site":"Nautilus Bay (Mossel Bay area), South Africa","lat":-34.18,"lon":22.12,"c":"highly"},
+ {"n":27,"d":"2017-01-27","part":"Right wing No. 7 flap support fairing","site":"Mpame Beach, Eastern Cape, South Africa","lat":-32.07,"lon":29.17,"c":"highly"},
+ {"n":28,"d":"2016–2017","part":"Unidentified part","site":"Antongil Bay, Madagascar","lat":-15.75,"lon":49.85,"c":"unid"},
+ {"n":29,"d":"2016–2017","part":"Unidentified part","site":"Antongil Bay, Madagascar","lat":-15.75,"lon":49.85,"c":"unid"},
+ {"n":30,"d":"2018-08","part":"Unidentified part","site":"Riake Beach, Nosy Boraha, Madagascar","lat":-16.88,"lon":49.92,"c":"unid"},
+ {"n":31,"d":"2016–2017","part":"Cabin floor panel","site":"Sandravinany, Madagascar","lat":-24.12,"lon":47.47,"c":"likely"},
+ {"n":32,"d":"2016–2017","part":"Unidentified part","site":"Sainte-Luce, Madagascar","lat":-24.77,"lon":47.18,"c":"unid"},
+ {"n":"G1","d":"2017","part":"Probable remnant of left main landing gear trunnion door","site":"Antsiraka Peninsula south beach, Madagascar","lat":-16.95,"lon":49.72,"c":"indep","note":"Not on the official list. Godfrey and Gibson's 2022 independent analysis judged it almost certainly from MH370."}
+],
+"pred": [
+ {"id":"lep","name":"UGIB 2020 last estimated position (Iannello, Godfrey, Ulich et al.)","lat":-34.2342,"lon":93.7875,"y":2020,"t":"Estimated 7th-arc crossing assuming no pilot inputs after 19:41 UTC."},
+ {"id":"hpa","name":"High Priority Area (Iannello, 2023)","lat":-34.53,"lon":93.79,"y":2023,"t":"Steep slope about 33 km south of the LEP; not scanned by GO Phoenix and only partly by OI in 2018. Position approximate."},
+ {"id":"wspr","name":"Godfrey WSPR estimate (2023)","lat":-29.128,"lon":99.934,"y":2023,"r":30,"t":"30 km radius; about 40 NM outside the arc. Tested in the separate WSPR validation project."},
+ {"id":"wspr21","name":"Godfrey earlier WSPR estimate (2021–22)","lat":-33.177,"lon":95.3,"y":2022,"t":"About 11 km east of the 7th arc."},
+ {"id":"csiro","name":"CSIRO drift estimate (Griffin, 2017)","lat":-35.6,"lon":92.8,"y":2017,"t":"Starting point of the 2018 Ocean Infinity search."},
+ {"id":"uwa","name":"UWA drift estimate (Pattiaratchi, 2017)","lat":-32.5,"lon":96.5,"y":2017,"r":40,"t":"40 km radius; wider priority band 28–33°S along the arc."}
+],
+"ships": [
+ {"name":"Armada 86 05, 4 Jan 2026","lat":-35.2,"lon":93.4},
+ {"name":"Armada 86 05, later (extended stay)","lat":-35.49,"lon":93.59},
+ {"name":"Armada 86 05, after that","lat":-35.12,"lon":93.73}
+]
+}

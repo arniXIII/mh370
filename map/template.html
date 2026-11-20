@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MH370 search map</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* VOICE: sober hydrographic survey sheet, respectful of 239 lost lives; no drama.
+   IDEA: a nautical chart with survey overlays — swaths drawn along the arc, wreckage plotted on the far shore.
+   PICTURE: the Indian Ocean itself: 7th arc in red, survey swaths, debris landfalls linked across the basin.
+   COLOUR and TYPE: chart-paper sea and pale land; one red for the arc and evidence, teal swaths, plum for the newest survey. Source Serif 4 + Inter.
+   LAYOUT: title, map with side legend (stacks on phones), then caveats, debris table, sources. */
+:root{color-scheme:light dark;
+--bg:light-dark(#f7f6f2,#0f1a1d);--ink:light-dark(#18211f,#e7ecea);--mute:light-dark(#5a6663,#9fb0ad);
+--sea:light-dark(#cbe1e6,#10303a);--land:light-dark(#f8f4ea,#2c3b34);--coast:light-dark(#7f7a68,#6f8579);
+--grat:light-dark(#b2ccd2,#1f4a56);--grat2:light-dark(#9dbcc4,#2a5a67);--lbl:light-dark(#3d4a47,#c9d6d2);--sealbl:light-dark(#4f7f8c,#7fb2bf);--arc:#d4312a;--atsb:light-dark(#7d9aa3,#7fa4ad);--oi18:light-dark(#22808f,#3fb3c4);--oi25:light-dark(#9b2c74,#e070b8);
+--line:light-dark(#d9dbd4,#2a3b3c);--card:light-dark(#ffffff,#152427)}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 Inter,system-ui,sans-serif;overflow-x:clip}
+.band{padding:clamp(24px,3.5vw,52px) max(5vw,16px)}
+.wrap{max-width:1240px;margin:0 auto}
+h1{font:600 clamp(30px,4.2vw,46px)/1.05 "Source Serif 4",Georgia,serif;margin:0 0 10px;text-wrap:balance}
+h2{font:600 26px/1.15 "Source Serif 4",Georgia,serif;margin:0 0 12px}
+.lede{max-width:70ch;color:var(--mute);margin:0}
+.lede b{color:var(--ink);font-weight:600}
+.mapgrid{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:18px;margin-top:22px}
+.mapbox{position:relative;background:var(--sea);border:1px solid var(--line);border-radius:6px;overflow:hidden;height:min(72vh,680px);min-height:420px}
+.mapbox svg{position:absolute;inset:0;width:100%;height:100%;cursor:grab;touch-action:none}
+.mapbox svg:active{cursor:grabbing}
+.vbar{background:var(--ink);color:var(--bg);font-size:14px;padding:9px max(5vw,16px)}.vbar .wrap{display:flex;flex-wrap:wrap;gap:6px 18px;align-items:center}.vbar a{color:inherit;text-decoration:underline;text-underline-offset:2px}.vbar b{font-weight:600}
+.thm{margin-left:auto;background:transparent;color:inherit;border:1px solid color-mix(in srgb,var(--bg) 45%,transparent);min-height:32px;padding:4px 10px;font-size:13px}
+.pop{position:absolute;z-index:5;width:min(330px,calc(100% - 24px));max-height:min(62%,420px);overflow:auto;background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:8px;box-shadow:0 8px 28px rgba(0,0,0,.28);padding:12px 14px 12px;font-size:14px;line-height:1.45}
+.pop[hidden],.popdot[hidden]{display:none}.popdot{position:absolute;z-index:4;width:12px;height:12px;margin:-6px 0 0 -6px;border-radius:50%;background:var(--card);border:2.5px solid var(--arc);box-shadow:0 0 0 2px var(--card);pointer-events:none}.pop .t{font-weight:600;font-size:15px;padding-right:28px}.pop ul{padding-left:18px;margin:8px 0 0}.pop li{margin-bottom:8px}
+.pop .x{position:absolute;top:6px;right:6px;min-height:30px;width:30px;padding:0;border:0;background:transparent;font-size:20px;line-height:1;color:var(--mute)}
+.pop dl{display:grid;grid-template-columns:auto 1fr;gap:3px 10px;margin:8px 0 0}.pop dt{color:var(--mute)}.pop dd{margin:0}
+.pop .why{margin:8px 0 0;padding:8px 10px;border-left:3px solid var(--arc);background:color-mix(in srgb,var(--arc) 7%,transparent)}
+@media(max-width:600px){.pop{left:8px!important;right:8px;width:auto;top:auto!important;bottom:8px;max-height:55%}}
+select{font:500 14px Inter,sans-serif;min-height:40px;padding:6px 8px;border-radius:5px;border:1px solid var(--line);background:var(--card);color:var(--ink);width:100%;margin-top:6px}
+.runtbl{width:100%;font-size:13px;margin-top:6px}.runtbl td{padding:3px 0;border:0}.runtbl td.num{text-align:right}
+.views{position:absolute;left:10px;top:10px;display:flex;flex-wrap:wrap;gap:6px}
+button,.chip{font:500 14px Inter,sans-serif;min-height:40px;padding:8px 12px;border-radius:5px;border:1px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer}
+button:focus-visible,input:focus-visible{outline:2px solid var(--arc);outline-offset:2px}
+button[aria-pressed=true]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.zoom{position:absolute;right:10px;bottom:10px;display:flex;flex-direction:column;gap:6px}
+.zoom button{width:40px;padding:0;font-size:20px}
+.scale{position:absolute;left:12px;bottom:10px;font-size:13px;color:var(--mute);background:color-mix(in srgb,var(--sea) 80%,transparent);padding:2px 6px;border-radius:4px}
+aside{display:flex;flex-direction:column;gap:14px}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:14px}
+.panel h3{font:600 15px Inter,sans-serif;margin:0 0 8px}
+.lay{display:flex;align-items:center;gap:10px;min-height:36px;font-size:14px;cursor:pointer}
+.lay input{width:18px;height:18px;accent-color:var(--arc);flex:none}
+.sw{width:22px;height:12px;border-radius:2px;flex:none}
+.dot{width:12px;height:12px;border-radius:50%;flex:none;border:1.5px solid var(--card);box-shadow:0 0 0 1px var(--coast)}
+.slider{display:flex;flex-direction:column;gap:6px;font-size:14px}
+input[type=range]{width:100%;accent-color:var(--arc);height:32px}
+#info{font-size:14px;min-height:120px}
+#info .t{font-weight:600;font-size:15px;margin-bottom:4px}
+#info ul{margin:6px 0 0;padding-left:18px}#info li{margin:3px 0}
+.muted{color:var(--mute)}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr));gap:28px}
+.cols p,.cols li{max-width:68ch}
+.cols ul{padding-left:20px;margin:0}.cols li{margin:6px 0}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-weight:600;color:var(--mute)}
+td.num{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+td.date{white-space:nowrap;font-variant-numeric:tabular-nums}
+.tag{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.src li{margin:4px 0}
+a{color:var(--oi18)}
+.scroll{overflow-x:auto}
+@media(max-width:900px){.mapgrid{grid-template-columns:1fr}.mapbox{height:62vh}}
+@media(max-width:600px){table{font-size:13px}.stack thead{display:none}.stack tr{display:grid;padding-block:10px;border-bottom:1px solid var(--line)}.stack td{display:flow-root;border:0;padding:3px 0;padding-inline-start:8em;text-align:start}.stack td::before{content:attr(data-l);float:inline-start;width:7.5em;margin-inline-start:-8em;white-space:normal;color:var(--mute)}.stack td:empty{display:none}.views button{min-height:36px;padding:6px 10px;font-size:13px}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+.lbl{pointer-events:none;font-family:Inter,sans-serif}
+</style>
+<script>new MutationObserver(()=>{for(const c of document.querySelectorAll('.stack td:not([data-l])')){let i=0,p=c;while(p=p.previousElementSibling)i+=p.colSpan;c.dataset.l=c.closest('table').rows[0].cells[i]?.textContent||''}}).observe(document,{childList:true,subtree:true})</script>
+</head>
+<body>
+<div class="vbar"><div class="wrap"><span><b>Version 1.0</b> · 20 November 2026</span><span>Independent analysis, not peer-reviewed</span><a id="lnkProto" href="docs/protocol.md">Protocol</a><a id="lnkRes" href="docs/results.md">Results</a><a id="lnkCode" href="README.md">Code and data</a><a id="lnkIssue" href="README.md">Report an error</a><button class="thm" id="thm" type="button"></button></div></div>
+<section class="band"><div class="wrap">
+<h1>MH370: where the seabed was searched, and where the debris washed ashore</h1>
+<p class="lede">Three seabed searches along the 7th arc (2014–17, 2018, 2025–26) found nothing. <b>33 items</b> washed up on the shores of the western Indian Ocean. This is a working map for estimating where probability remains. The 2014–17 coverage is <b>measured data</b>; for 2018 only the <b>outer boundary</b> is known; the 2025–26 coverage is <b>estimated from the ship's track</b>.</p>
+
+<div class="mapgrid">
+ <div class="mapbox" id="mapbox">
+  <svg id="map" role="img" aria-label="Map of the Indian Ocean with the 7th arc, the searched areas and the recovered debris"></svg>
+  <div class="views" role="group" aria-label="Views">
+   <button data-view="all" aria-pressed="true">Whole basin</button>
+   <button data-view="search" aria-pressed="false">Search zone</button>
+   <button data-view="debris" aria-pressed="false">Debris</button>
+   <button data-view="likely" aria-pressed="false">Most likely area</button>
+  </div>
+  <div class="zoom"><button id="zin" aria-label="Zoom in">+</button><button id="zout" aria-label="Zoom out">−</button></div>
+  <div class="scale" id="scale"></div>
+  <div class="popdot" id="popdot" hidden></div><div class="pop" id="pop" hidden role="dialog" aria-live="polite"><button class="x" id="popx" aria-label="Close">×</button><div id="popc"></div></div>
+ </div>
+ <aside>
+  <div class="panel">
+   <h3>Layers</h3>
+   <label class="lay"><input type="checkbox" data-l="hpd" checked><span class="sw" style="background:#2b4acb;opacity:.45"></span>Posterior: 50 / 80 / 95% areas</label>
+   <label class="lay"><input type="checkbox" data-l="top" checked><span class="sw" style="background:#f0b429;opacity:.85;outline:1.5px solid #8a5a00"></span>Most likely area (exploratory)</label>
+   <label for="run" class="muted" style="font-size:13px;display:block;margin-top:4px">Analysis run</label><select id="run"></select>
+   <table class="runtbl" id="runtbl"></table>
+   <label class="lay"><input type="checkbox" data-l="arc" checked><span class="sw" style="background:var(--arc);height:3px"></span>7th arc (00:19 UTC)</label>
+   <label class="lay"><input type="checkbox" data-l="atsb" checked><span class="sw" style="background:var(--atsb);opacity:.55"></span>ATSB 2014–17, measured coverage</label>
+   <label class="lay"><input type="checkbox" data-l="oi18" checked><span class="sw" style="background:var(--oi18);opacity:.5"></span>Ocean Infinity 2018 (outer boundary)</label>
+   <label class="lay"><input type="checkbox" data-l="gap18" checked><span class="sw" style="background:#d9622b;opacity:.7"></span>2018: likely gaps</label>
+   <label class="lay"><input type="checkbox" data-l="oi25" checked><span class="sw" style="background:var(--oi25);opacity:.45;outline:1.5px dashed var(--oi25)"></span>OI 2025–26 (estimated)</label>
+   <label class="lay"><input type="checkbox" data-l="uwa"><span class="sw" style="background:#e9a23b;height:5px"></span>UWA drift band (28–33°S)</label>
+   <label class="lay"><input type="checkbox" data-l="pred" checked><span class="dot" style="background:var(--ink);border-radius:2px"></span>Estimated impact points</label>
+   <label class="lay"><input type="checkbox" data-l="ships"><span class="dot" style="background:var(--oi25)"></span>Armada 86 05 reported positions</label>
+   <label class="lay"><input type="checkbox" data-l="links"><span class="sw" style="border-top:1.5px dotted var(--arc);height:0"></span>Debris-to-arc links</label>
+   <label class="lay"><input type="checkbox" data-l="names" checked><span class="sw" style="border:1px solid var(--lbl);background:none"></span>Place names and grid labels</label>
+  </div>
+  <div class="panel">
+   <h3>Debris by classification</h3>
+   <div id="cls"></div>
+   <div class="slider"><label for="date">Found up to: <b id="dateLbl"></b></label><input type="range" id="date" min="0" max="0" step="1"></div>
+  </div>
+  <div class="panel" id="info"><div class="t">Click a marker or area</div><div class="muted">A card with the key facts opens on the map. Beach markers are sized by the number of items found there. Scroll or pinch to zoom.</div></div>
+ </aside>
+</div>
+</div></section>
+
+<section class="band" style="border-top:1px solid var(--line)"><div class="wrap cols">
+ <div>
+  <h2>How accurate this map is</h2>
+  <ul>
+   <li><b>7th arc:</b> equal slant range from the Inmarsat-3F1 satellite on the WGS84 ellipsoid, at 20,000 ft. The satellite position (0.54°N, 64.46°E) and the range were fitted to the arc published by CAPTION (residual SD 25 m). Check: the UGIB last estimated position lies about 2 km from the arc, and Godfrey's WSPR point about 43 NM outside it (published: about 40 NM).</li>
+   <li><b>ATSB 2014–17:</b> measured coverage from Geoscience Australia's four sonar mosaics (Fugro deep tow, Fugro AUV, GO Phoenix, Dong Hai Jiu 101), on a grid of about 2 km. Total about 124,000 km², about 3% more than the official 120,000 km² because the grid slightly widens swath edges. The darker the shade, the more likely it is AUV coverage of difficult terrain.</li>
+   <li><b>OI 2018:</b> the outer boundary published by CAPTION, minus the 2014–17 area: about 125,500 km². Ocean Infinity reports 112,000 km² searched, so about 13,000 km² may have been missed. The likely gaps are estimated from the ship's track: the AUVs worked far from the ship, so cells the ship never came within 25 km of are marked. They lie mostly inside the arc, at 29–32°S and 25–27°S. This is a weak estimate.</li>
+   <li><b>OI 2025–26:</b> the dashed line is the area proposed in 2024 (about 15,800 km², CAPTION). The fill is an estimate: a 4.2 km band around the ship's hourly positions, set so that the Dec 2025 – Jan 2026 phase matches the reported ~7,200 km². The March 2025 track (lighter) was partly a survey before the contract was signed; by the same method about 4,200 km², of which about 3,500 km² does not overlap the later phase. <b>Check:</b> this leaves about 8,100 km² of the proposed area unsearched (the whole inner, north-west sub-area and about 1,800 km² of the south-east one), close to the officially remaining 7,429 km².</li>
+   <li><b>Debris positions:</b> the official list gives only beach names; coordinates were assigned by hand at beach or town level (about 5–30 km).</li>
+   <li><b>Posterior layer:</b> the pre-registered analysis; pick the primary run or any of the 13 sensitivity runs in the layer panel. Its straight-edged blocks are real features of the inputs, not drawing errors: the drift prior and the piloted-glide model are uniform bands, so the probability changes in steps at 28°S, 33°S, 36°S and at 25 NM and 100 NM from the arc.</li>
+   <li><b>Seafloor feature names</b> (Broken Ridge, Diamantina Fracture Zone, Naturaliste Plateau, Ninety East Ridge) are placed approximately, for orientation only.</li>
+  </ul>
+ </div>
+ <div>
+  <h2>The research gap</h2>
+  <p>There is no single public, updated estimate of where probability remains after three unsuccessful searches. For Air France 447, a Bayesian re-analysis of this kind is what led to the wreck.</p>
+  <p>Status:</p>
+  <ul>
+   <li><s>Add the measured 2014–17 coverage.</s> Done.</li>
+   <li><s>Add the 2018 outer boundary, likely 2018 gaps and estimated 2025–26 coverage.</s> Done.</li>
+   <li><s>Compute the posterior following the pre-registered protocol.</s> Done; all runs can be shown on the map.</li>
+   <li>Compare the result with the roughly 7,400 km² still under the Ocean Infinity contract, valid to 30 June 2027.</li>
+  </ul>
+ </div>
+</div></section>
+
+<section class="band" style="border-top:1px solid var(--line)"><div class="wrap">
+ <h2>Debris washed ashore</h2>
+ <p class="muted" style="margin-top:-4px">Malaysia Ministry of Transport: <i>Summary of Possible MH370 Debris Recovered</i> (30 Dec 2018), plus one independent identification.</p>
+ <table class="stack"><thead><tr><th>No.</th><th>Found</th><th>Part</th><th>Location</th><th>Classification</th></tr></thead><tbody id="tbl"></tbody></table>
+</div></section>
+
+<section class="band" style="border-top:1px solid var(--line)"><div class="wrap">
+ <h2>Sources</h2>
+ <ul class="src">
+  <li><a href="https://www.mot.gov.my/en/Laporan%20MH%20370/Summary%20of%20Debris%20Recovered%20-%20Updated%2030%20Dec%202018.pdf">Malaysia MoT: Summary of possible MH370 debris recovered (2018)</a></li>
+  <li><a href="https://www.atsb.gov.au/maps">ATSB: The Seventh Arc (search criteria)</a></li>
+  <li><a href="https://pid.geoscience.gov.au/dataset/ga/120969">Geoscience Australia: MH370 Phase 2 5 m sonar mosaics (AusSeabed WMS/WFS)</a>. Source: Governments of Australia, Malaysia and the People's Republic of China, 2018. MH370 Phase 2 data. CC BY 4.0.</li>
+  <li><a href="https://www.mh370-caption.net/index.php/armada-tracking/">MH370-CAPTION: Armada-tracking</a> (7th arc, 2018 boundary, 2024 proposed area, ship tracks)</li>
+  <li><a href="https://mh370.radiantphysics.com/2026/01/01/the-search-for-mh370-continues-into-2026/">Iannello: The Search for MH370 Continues into 2026</a></li>
+  <li><a href="https://mh370.radiantphysics.com/2023/02/">Iannello: A High Priority Area to Search for MH370 (2023)</a></li>
+  <li><a href="https://abcnews.com/International/wireStory/malaysia-extends-search-mh370-year-keeping-families-hopes-134301629">AP: Malaysia extends the search for another year (June 2026)</a></li>
+  <li><a href="https://www.airlineratings.com/articles/mh370-final-search-begins-1417-days">AirlineRatings: CSIRO and UWA estimates (2018)</a></li>
+  <li><a href="https://www.mh370search.com/?p=1345">Godfrey: WSPR estimate, 29.128°S 99.934°E</a></li>
+  <li>Coastline: Natural Earth 1:50m (world-atlas).</li>
+ </ul>
+</div></section>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+<script>
+{
+const LAND=__LAND__;
+const GEO=__GEO__;
+const PTS=__PTS__;
+const COV=__COV__;
+const OI=__OI__;
+const GAP=__GAP__;
+const HPD=__HPD__;
+const RES=__RES__;
+let curRun='P';
+
+// place names: [lon, lat, text, kind, minZoom]; kind: c=country, s=sea, i=island/city point, f=seafloor feature
+const PLACES=[
+ [121,-25,'AUSTRALIA','c',1],[46.8,-19.6,'MADAGASCAR','c',1],[37.5,-14.5,'MOZAMBIQUE','c',1],[25.5,-30.5,'SOUTH AFRICA','c',1],[35.5,-7.5,'TANZANIA','c',1.3],[38,-1.5,'KENYA','c',2],[101.5,-0.8,'Sumatra','c',1.6],[110.5,-7.4,'Java','c',2],
+ [75,-24,'INDIAN OCEAN','s',1],[48,-35,'Mozambique Channel','s',2.6],
+ [55.53,-21.12,'Réunion','i',1.5],[57.55,-20.25,'Mauritius','i',1],[63.42,-19.72,'Rodrigues','i',1.8],[96.83,-12.15,'Cocos (Keeling) Is.','i',1],[105.67,-10.47,'Christmas I.','i',1.3],[72.42,-7.32,'Diego Garcia','i',1.8],[55.45,-4.62,'Seychelles','i',2],
+ [115.86,-31.95,'Perth','i',1],[32.57,-25.97,'Maputo','i',2.2],[31.03,-29.86,'Durban','i',2.6],[22.14,-34.18,'Mossel Bay','i',3],[39.2,-6.8,'Dar es Salaam','i',2.6],[49.4,-18.15,'Toamasina','i',3],
+ [95,-30.6,'Broken Ridge','f',2.2],[102.5,-34.8,'Diamantina Fracture Zone','f',2.6],[111.5,-34.6,'Naturaliste Plateau','f',3],[88.5,-16,'Ninety East Ridge','f',2]
+];
+
+const CLS={confirmed:["Confirmed","#a3161c"],almost:["Almost certain","#d4312a"],highly:["Highly likely","#ee7a3a"],likely:["Likely","#f2b072"],indep:["Independent identification","#7a4fd1"],unid:["Not identified","#8f9a98"]};
+const order=["confirmed","almost","highly","likely","indep","unid"];
+const on=new Set(order);
+const layers={top:true,hpd:true,names:true,gap18:true,arc:true,atsb:true,oi18:true,oi25:true,uwa:false,pred:true,ships:false,links:false};
+
+const toDate=s=>{const m=String(s).match(/(\d{4})(?:-(\d{2}))?(?:-(\d{2}))?/);return new Date(+m[1],(m[2]||12)-1,m[3]||28)};
+const debris=PTS.debris.map(d=>({...d,dt:toDate(String(d.d).split('–').pop())}));
+const dates=[...new Set(debris.map(d=>+d.dt))].sort((a,b)=>a-b);
+const fmt=t=>new Date(t).toLocaleDateString('en-GB',{year:'numeric',month:'short'});
+const slider=document.getElementById('date');slider.max=dates.length-1;slider.value=dates.length-1;
+let maxDate=dates[dates.length-1];
+const ll=(lat,lon)=>`${Math.abs(lat).toFixed(2)}°${lat<0?'S':'N'}, ${lon.toFixed(2)}°E`;
+
+const svg=d3.select('#map');const box=document.getElementById('mapbox');
+const proj=d3.geoMercator();const path=d3.geoPath(proj);
+const g=svg.append('g');
+const gGrat=g.append('g'),gLand=g.append('g'),gBand=g.append('g'),gArc=g.append('g'),gLink=g.append('g'),gPred=g.append('g'),gShip=g.append('g'),gDeb=g.append('g'),gLbl=g.append('g');
+const gOver=svg.append('g').attr('class','lbl');   // screen-space labels, not scaled
+const css=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+const line=c=>({type:'Feature',geometry:{type:'LineString',coordinates:c}});
+const circle=(lon,lat,km)=>d3.geoCircle().center([lon,lat]).radius(km/111.2)();
+
+let sites=[];
+function buildSites(){
+ const m=new Map();
+ for(const d of debris){if(!on.has(d.c)||+d.dt>maxDate)continue;const k=d.lat+','+d.lon;if(!m.has(k))m.set(k,{lat:d.lat,lon:d.lon,site:d.site,items:[]});m.get(k).items.push(d)}
+ sites=[...m.values()].map(s=>{s.best=order.find(c=>s.items.some(i=>i.c===c));return s});
+}
+let k=1;
+function render(){
+ const W=box.clientWidth,H=box.clientHeight;
+ proj.fitExtent([[10,10],[W-10,H-10]],{type:'Feature',geometry:{type:'MultiPoint',coordinates:[[18,2],[119,-42]]}});
+ for(const gg of [gGrat,gLand,gBand,gArc])gg.selectAll('*').remove();
+ gGrat.append('path').datum(d3.geoGraticule().step([5,5]).extent([[0,-60],[180,30]])()).attr('d',path).attr('fill','none').attr('stroke',css('--grat')).attr('stroke-width',.6).attr('vector-effect','non-scaling-stroke');
+ gGrat.append('path').datum(d3.geoGraticule().step([10,10]).extent([[0,-60],[180,30]])()).attr('d',path).attr('fill','none').attr('stroke',css('--grat2')).attr('stroke-width',1).attr('vector-effect','non-scaling-stroke');
+ gLand.selectAll('path').data(LAND.features).join('path').attr('d',path).attr('fill',css('--land')).attr('stroke',css('--coast')).attr('stroke-width',1).attr('vector-effect','non-scaling-stroke');
+ const OIF=Object.fromEntries(OI.features.map(f=>[f.properties.layer,f]));
+ const addF=(f,key,fill,op,stroke,sw,dash,click)=>gBand.append('path').datum(f).attr('class','b-'+key).attr('d',path).attr('fill',fill).attr('fill-opacity',op).attr('stroke',stroke).attr('stroke-width',sw).attr('stroke-dasharray',dash||null).attr('vector-effect','non-scaling-stroke').style('cursor','pointer').on('click',()=>showBand(click||key));
+ addF(OIF.oi2018,'oi18',css('--oi18'),.3,css('--oi18'),.6);
+ const VEH={deeptow:['Fugro deep-tow side-scan sonar (2014–16)',.5],gophoenix:['GO Phoenix synthetic aperture sonar (2014–15)',.62],dhj:['Dong Hai Jiu 101 synthetic aperture sonar (2016)',.62],auv:['Fugro AUV side-scan sonar (2015–17), difficult terrain',.85]};
+ for(const f of COV.features)gBand.append('path').datum(f).attr('class','b-atsb').attr('d',path).attr('fill',css('--atsb')).attr('fill-opacity',VEH[f.properties.layer][1]).attr('stroke','none').style('cursor','pointer').on('click',()=>info(`<div class="t">ATSB 2014–17: ${VEH[f.properties.layer][0]}</div><p style="margin:6px 0 0">Measured coverage from Geoscience Australia's sonar mosaics, on a grid of about 2 km. Total searched area in this processing is about 124,000 km² (official figure about 120,000 km²; the difference comes from the grid).</p>`));
+ for(const f of GAP.features)addF(f,'gap18','#d9622b',f.properties.layer==='gap2018strong'?.75:.4,'none',0,null,f.properties.layer);
+ addF(OIF.oi2025zone,'oi25','none',0,css('--oi25'),1.4,'6 4');
+ for(const f of HPD.features.filter(f=>f.properties.run===curRun))addF(f,'hpd','#2b4acb',{hpd95:.10,hpd80:.16,hpd50:.26}[f.properties.layer],'#2b4acb',{hpd95:.5,hpd80:.8,hpd50:1.2}[f.properties.layer],null,f.properties.layer);
+ addF(OIF.oi2025p1,'oi25',css('--oi25'),.22,'none',0,null,'oi25a');
+ addF(OIF.oi2025p2,'oi25',css('--oi25'),.5,'none',0,null,'oi25b');
+ addF(OIF.track2025p1,'oi25','none',0,css('--oi25'),.7,'1 2','oi25a');
+ addF(OIF.track2025p2,'oi25','none',0,css('--oi25'),.9,null,'oi25b');
+ for(const f of HPD.features.filter(f=>f.properties.layer==='top'&&f.properties.run===curRun))addF(f,'top','#f0b429',.18,'#b07800',1.1,'4 3','top');
+ for(const f of HPD.features.filter(f=>f.properties.layer==='core'))addF(f,'top','#f0b429',.85,'#8a5a00',1.8,null,'core');
+ gArc.append('path').datum(line(GEO.uwa)).attr('class','uwa').attr('d',path).attr('fill','none').attr('stroke','#e9a23b').attr('stroke-width',7).attr('stroke-opacity',.75).attr('stroke-linecap','round').attr('vector-effect','non-scaling-stroke');
+ gArc.append('path').datum(line(GEO.arc)).attr('class','arc').attr('d',path).attr('fill','none').attr('stroke',css('--arc')).attr('stroke-width',2).attr('vector-effect','non-scaling-stroke');
+ drawPoints();drawOverlay(d3.zoomTransform(svg.node()));
+}
+function drawPoints(){
+ buildSites();
+ const s=1/Math.sqrt(k), lep=proj([93.7875,-34.2342]);
+ gLink.selectAll('*').remove();
+ gLink.selectAll('line').data(sites).join('line').attr('x1',d=>proj([d.lon,d.lat])[0]).attr('y1',d=>proj([d.lon,d.lat])[1]).attr('x2',lep[0]).attr('y2',lep[1]).attr('stroke',css('--arc')).attr('stroke-opacity',.35).attr('stroke-dasharray','2 4').attr('vector-effect','non-scaling-stroke');
+ gDeb.selectAll('circle').data(sites,d=>d.site).join('circle')
+  .attr('cx',d=>proj([d.lon,d.lat])[0]).attr('cy',d=>proj([d.lon,d.lat])[1])
+  .attr('r',d=>(5+3*Math.sqrt(d.items.length-1))*s).attr('fill',d=>CLS[d.best][1]).attr('stroke',css('--card')).attr('stroke-width',1.5*s)
+  .style('cursor','pointer').on('click',(e,d)=>showSite(d));
+ gPred.selectAll('*').remove();
+ for(const p of PTS.pred){
+  const [x,y]=proj([p.lon,p.lat]);
+  if(p.r)gPred.append('path').datum(circle(p.lon,p.lat,p.r)).attr('d',path).attr('fill',css('--ink')).attr('fill-opacity',.08).attr('stroke',css('--ink')).attr('stroke-width',1).attr('stroke-dasharray','3 3').attr('vector-effect','non-scaling-stroke');
+  gPred.append('rect').attr('x',x-4.5*s).attr('y',y-4.5*s).attr('width',9*s).attr('height',9*s).attr('transform',`rotate(45 ${x} ${y})`).attr('fill',css('--ink')).attr('stroke',css('--card')).attr('stroke-width',1.2*s).style('cursor','pointer').on('click',()=>showPred(p));
+ }
+ gShip.selectAll('circle').data(PTS.ships).join('circle').attr('cx',d=>proj([d.lon,d.lat])[0]).attr('cy',d=>proj([d.lon,d.lat])[1]).attr('r',4*s).attr('fill',css('--oi25')).attr('stroke',css('--card')).attr('stroke-width',s).style('cursor','pointer').on('click',(e,d)=>info(`<div class="t">${d.name}</div><div>${ll(d.lat,d.lon)}</div><div class="muted" style="margin-top:6px">From ship-tracking data quoted in blog comments; the vessel was deploying or recovering AUVs.</div>`));
+ gLbl.selectAll('*').remove();
+ const labels=[[93.79,-34.23,'LEP'],[99.93,-29.13,'WSPR']];
+ if(k>2.2)for(const [lo,la,t] of labels){const [x,y]=proj([lo,la]);gLbl.append('text').attr('x',x+8*s).attr('y',y-6*s).attr('font-size',12*s).attr('font-weight',600).attr('fill',css('--ink')).attr('paint-order','stroke').attr('stroke',css('--sea')).attr('stroke-width',3*s).text(t)}
+ applyLayers();
+ document.getElementById('dateLbl').textContent=fmt(maxDate)+` (${sites.reduce((a,s)=>a+s.items.length,0)} items)`;
+}
+// screen-space labels: place names + graticule degrees, constant size at any zoom
+function drawOverlay(t){
+ gOver.selectAll('*').remove();
+ if(!layers.names)return;
+ const W=box.clientWidth,H=box.clientHeight,ink=css('--lbl'),sea=css('--sea'),halo=css('--land');
+ const P=(lo,la)=>t.apply(proj([lo,la]));
+ const txt=(x,y,s,o)=>gOver.append('text').attr('x',x).attr('y',y).text(s).attr('font-size',o.size||12).attr('font-weight',o.w||500).attr('fill',o.fill||ink).attr('font-style',o.it?'italic':null).attr('letter-spacing',o.ls||null).attr('text-anchor',o.anchor||'middle').attr('paint-order','stroke').attr('stroke',o.halo||sea).attr('stroke-width',3).attr('stroke-linejoin','round');
+ const narrow=W<600?0.7:0;
+ for(const [lo,la,s,kind,mz] of PLACES){
+  if(t.k<mz+narrow)continue;
+  let [x,y]=P(lo,la);if(x<-80||y<-20||x>W+80||y>H+20)continue;
+  if(kind==='c'){const hw=s.length*4.6+6;x=Math.max(hw,Math.min(W-hw,x));}
+  if(kind==='c')txt(x,y,s,{size:s===s.toUpperCase()?12:12,w:600,ls:s===s.toUpperCase()?'1.5':null,halo});
+  else if(kind==='s')txt(x,y,s,{size:s==='INDIAN OCEAN'?16:13,w:500,it:true,ls:s==='INDIAN OCEAN'?'4':null,fill:css('--sealbl')});
+  else if(kind==='f')txt(x,y,s,{size:11,w:500,it:true,fill:css('--sealbl')});
+  else{gOver.append('circle').attr('cx',x).attr('cy',y).attr('r',2.5).attr('fill',ink);txt(x+6,y+4,s,{size:11.5,anchor:'start'});}
+ }
+ // degree labels on the left and bottom edges
+ const inv=(x,y)=>proj.invert(t.invert([x,y]));
+ const [lonL,latT]=inv(0,0),[lonR,latB]=inv(W,H);
+ const span=Math.max(lonR-lonL,latT-latB);const step=span>40?10:span>12?5:span>5?2:1;
+ for(let la=Math.ceil(latB/step)*step;la<=latT;la+=step){const y=P(lonL,la)[1];if(y<64||y>H-50)continue;txt(4,y-3,`${Math.abs(la)}°${la<0?'S':la>0?'N':''}`,{size:11,anchor:'start',fill:css('--sealbl')})}
+ for(let lo=Math.ceil(lonL/step)*step;lo<=lonR;lo+=step){const x=P(lo,latB)[0];if(x<210||x>W-70)continue;txt(x,H-32,`${lo}°E`,{size:11,fill:css('--sealbl')})}
+}
+function applyLayers(){
+ gArc.select('.arc').attr('display',layers.arc?null:'none');gArc.select('.uwa').attr('display',layers.uwa?null:'none');
+ gBand.selectAll('.b-atsb').attr('display',layers.atsb?null:'none');gBand.selectAll('.b-oi18').attr('display',layers.oi18?null:'none');gBand.selectAll('.b-oi25').attr('display',layers.oi25?null:'none');gBand.selectAll('.b-gap18').attr('display',layers.gap18?null:'none');gBand.selectAll('.b-hpd').attr('display',layers.hpd?null:'none');gBand.selectAll('.b-top').attr('display',layers.top?null:'none');
+ gPred.attr('display',layers.pred?null:'none');gShip.attr('display',layers.ships?null:'none');gLink.attr('display',layers.links?null:'none');
+}
+const pop=document.getElementById('pop'),popc=document.getElementById('popc'),popdot=document.getElementById('popdot');let lastPt=null,anchor=null,side=1,shownAt=0;
+box.addEventListener('pointerdown',e=>{const r=box.getBoundingClientRect();lastPt=[e.clientX-r.left,e.clientY-r.top]},true);
+const mobile=()=>matchMedia('(max-width:600px)').matches;
+function anchorPx(){if(!anchor)return null;const t=d3.zoomTransform(svg.node());return t.apply(proj(anchor))}
+function info(h){popc.innerHTML=h;pop.hidden=false;shownAt=performance.now();
+ const t=d3.zoomTransform(svg.node());anchor=lastPt?proj.invert(t.invert(lastPt)):null;
+ const W=box.clientWidth;side=lastPt&&lastPt[0]+14+pop.offsetWidth>W-8?-1:1;placePop(true);}
+function placePop(first){if(pop.hidden)return;const a=anchorPx();
+ if(!a||mobile()){popdot.hidden=!a||!mobile()?true:false;if(a&&mobile()){popdot.style.left=a[0]+'px';popdot.style.top=a[1]+'px'}
+  if(!a){pop.style.left='auto';pop.style.right='12px';pop.style.top='12px'}return}
+ const W=box.clientWidth,H=box.clientHeight,pw=pop.offsetWidth,ph=pop.offsetHeight;
+ popdot.hidden=false;popdot.style.left=a[0]+'px';popdot.style.top=a[1]+'px';
+ const x=side>0?a[0]+14:a[0]-14-pw;let y=a[1]-20;
+ if(first){y=Math.min(Math.max(8,y),H-ph-8);pop.dataset.dy=y-a[1]}else y=a[1]+(+pop.dataset.dy);   // card keeps its offset from the clicked point while panning
+ pop.style.right='auto';pop.style.left=x+'px';pop.style.top=y+'px';
+ const off=a[0]<-40||a[0]>W+40||a[1]<-40||a[1]>H+40;pop.style.visibility=popdot.style.visibility=off?'hidden':'visible';}
+function hidePop(){pop.hidden=true;popdot.hidden=true;anchor=null}
+
+document.getElementById('popx').onclick=hidePop;
+document.addEventListener('keydown',e=>{if(e.key==='Escape')hidePop()});
+box.addEventListener('click',e=>{if(!pop.contains(e.target)&&performance.now()-shownAt>60)hidePop()});
+const LOSS=new Date(2014,2,8);
+const months=d=>Math.round((d-LOSS)/(30.44*864e5));
+const kmFromArc=(lat,lon)=>Math.round(d3.geoDistance([lon,lat],[93.79,-34.23])*6371/50)*50;
+const CLSX={confirmed:'Unique markings (part or serial numbers) tie it to 9M-MRO, the aircraft flown as MH370.',almost:'A Boeing 777 part with features matching 9M-MRO; no unique identifier was found.',highly:'Identified as a Boeing 777 part, consistent with MH370.',likely:'Consistent with a Boeing 777 part, but not specific enough to be sure.',indep:'Not assessed in the official list; identified by independent researchers.',unid:'Examined but could not be identified as coming from MH370.'};
+const WHY={
+ '1':'The first piece of MH370 ever found. It proved the aircraft ended in the Indian Ocean. Its barnacles and its drift path were used to test where along the 7th arc the aircraft could have entered the water. The ATSB judged it was most likely in the neutral (not extended) position when it broke off.',
+ '19':'One of three confirmed parts. The ATSB found the flap was most likely retracted when it separated, which argues against a controlled ditching with flaps extended. This matters for how far from the arc the aircraft could be.',
+ '10':'One of three parts confirmed by their markings as coming from 9M-MRO.',
+ '3':'Found by an independent searcher in February 2016. Debris on the coast of Mozambique matched drift predictions for a crash on the 7th arc.',
+ '4':'Carries part of a Rolls-Royce stencil. MH370 had Rolls-Royce Trent 892 engines.',
+ '5':'An interior cabin part. Interior pieces suggest the aircraft broke up on impact rather than staying largely intact.',
+ '11':'An interior cabin part (in-flight entertainment screen surround), which also points to a high-energy break-up.',
+ 'G1':'Not on the official list. Godfrey and Gibson (2022) argued it is almost certainly from MH370.'};
+function itemCard(i){return `<li><b>${i.part}</b> <span class="muted">#${i.n}</span><dl><dt>Found</dt><dd>${i.d} · ${String(i.d).includes('–')?'about ':''}${months(i.dt)} months after the loss</dd><dt>Status</dt><dd><span class="tag"><span class="dot" style="background:${CLS[i.c][1]}"></span>${CLS[i.c][0]}</span></dd></dl><div class="muted" style="margin-top:4px">${CLSX[i.c]}</div>${WHY[i.n]?`<div class="why">${WHY[i.n]}</div>`:''}${i.note?`<div class="muted" style="margin-top:4px">${i.note}</div>`:''}</li>`}
+function showSite(s){info(`<div class="t">${s.site}</div><div class="muted">${ll(s.lat,s.lon)} · ${s.items.length} item${s.items.length>1?'s':''} · about ${kmFromArc(s.lat,s.lon).toLocaleString('en-GB')} km from the 7th arc near 34°S</div><ul>${s.items.slice().sort((a,b)=>order.indexOf(a.c)-order.indexOf(b.c)).map(itemCard).join('')}</ul>`)}
+function showPred(p){info(`<div class="t">${p.name}</div><div class="muted">${ll(p.lat,p.lon)}</div><p style="margin:8px 0 0">${p.t}</p>`)}
+const BT={gap2018:['2018: likely gap','Area inside the 2018 outer boundary that the Seabed Constructor never came within 25 km of (hourly positions). The 25 km radius was set so that the area covered inside the boundary equals the reported 112,000 km². About 13,400 km² in total, about 77% of it inside (north-west of) the arc, mainly at 29–32°S and 25–27°S. It may be a real gap, or the CAPTION boundary may be wider than the actual search there.'],gap2018strong:['2018: strong gap candidate','The ship never came within 34 km of these cells (about 5,300 km²). These are the least likely to have been searched.'],oi18:['Ocean Infinity 2018 (outer boundary)','January–June 2018, Seabed Constructor with 8 AUVs. Boundary published by CAPTION; without the 2014–17 area about 125,500 km². OI reports 112,000 km² searched, so about 10% inside the boundary may have been missed.'],oi25:['Ocean Infinity 2025–26: proposed area','The two sub-areas proposed in 2024 (about 15,800 km²). The contract runs to 30 June 2027; about 7,429 km² remains.'],oi25a:['OI March 2025 (Armada 78 06)','Band estimated from the ship\'s hourly positions (±4.2 km). Only work from 25–28 March counts as contracted search; the earlier days were a survey before the contract was signed.'],oi25b:['OI Dec 2025 – Jan 2026 (Armada 86 05)','Band estimated from the ship\'s hourly positions (±4.2 km), set to match the reported ~7,200 km². The actual AUV tracks are not public, so this is an approximation.']};
+function showTop(key){const r=RES.runs.find(x=>x.id===curRun),C=RES.core,b=C.blocks[0];
+ const head=key==='core'?'Most likely area: robust core':`Most likely area: ${r.id==='P'?'primary run':r.id+' run'}`;
+ info(`<div class="t">${head}</div><dl><dt>Size</dt><dd>${key==='core'?Math.round(C.area_km2).toLocaleString('en-GB'):'10,000'} km²</dd><dt>Probability</dt><dd>${key==='core'?pct(C.mass_primary)+' (primary run)':pct(r.top_area.mass)}</dd></dl>
+ <p style="margin:8px 0 0">${key==='core'?`Cells that are among the highest-probability 10,000 km² in at least ${C.min_runs} of the ${C.n_runs} analysis runs, so they do not depend much on any single assumption.`:`The 10,000 km² with the highest probability per km² in this run (dashed outline). Roughly one season of AUV search. Across all runs this area holds 8–29%.`}</p>
+ <div class="why">The largest block (about ${(Math.round(b.area_km2/50)*50).toLocaleString('en-GB')} km², ${pct(b.mass_primary)}) is centred at ${ll(b.lat,b.lon)}, on the north-west side of the arc within 45 km, near the UGIB 2020 estimate. Two things meet there: the UGIB and drift priors both favour this latitude and the DSTG prior still gives it some weight, and the seabed was searched only once, by one sensor on moderately sloped ground, so a miss is plausible. About 400 km² of it is a thin strip between the 2014–17 and 2018 search boundaries that appears unsearched here; that may be an artefact of the reconstruction. A second block lies on the steep slopes south-east of it, close to Iannello's 2023 High Priority Area.</div>
+ <p class="muted" style="margin:8px 0 0">Exploratory, added after the pre-registered results. About ${pct(1-r.top_area.mass)} of the probability lies outside this area, so this is the best bet under the model, not a likely location.</p>`)}
+function showBand(key){if(key.startsWith('hpd'))return showRun(key);if(key==='top'||key==='core')return showTop(key);info(`<div class="t">${BT[key][0]}</div><p style="margin:6px 0 0">${BT[key][1]}</p>`)}
+
+
+const pct=v=>(100*v).toFixed(1)+'%';
+const runSel=document.getElementById('run');
+runSel.innerHTML=RES.runs.map(r=>`<option value="${r.id}">${r.id==='P'?'Primary run':r.id+': '+r.label}</option>`).join('');
+function runTable(){const r=RES.runs.find(x=>x.id===curRun);
+ document.getElementById('runtbl').innerHTML=Object.entries(RES.regions).map(([k,n])=>`<tr><td>${n}</td><td class="num">${pct(r.mass[k])}</td></tr>`).join('')+`<tr><td>Most likely 10,000 km²</td><td class="num">${pct(r.top_area.mass)}</td></tr><tr><td class="muted">50% area</td><td class="num muted">${Math.round(r.hpd_km2.hpd50/1000)}k km²</td></tr>`;}
+function showRun(key){const r=RES.runs.find(x=>x.id===curRun);const q={hpd50:'50',hpd80:'80',hpd95:'95'}[key];
+ info(`<div class="t">${r.id==='P'?'Primary run':r.id+': '+r.label} — ${q}% highest-probability area</div><p style="margin:6px 0 0">The smallest set of cells holding ${q}% of the remaining probability: about ${Math.round(r.hpd_km2[key]).toLocaleString('en-GB')} km². The OI remaining contract area holds ${pct(r.mass.R1)}; the best area of the same size elsewhere holds ${pct(r.best_equal_area_elsewhere)}. Chance that all searches missed the aircraft under this run's prior: ${pct(r.p_all_missed)}.</p>`);}
+runSel.addEventListener('change',()=>{curRun=runSel.value;runTable();render();hidePop()});
+runTable();
+
+{const h=location.hostname;if(h.endsWith('github.io')){const user=h.split('.')[0],repo=location.pathname.split('/').filter(Boolean)[0]||'';const base=`https://github.com/${user}/${repo}`;
+ document.getElementById('lnkProto').href=base+'/blob/main/docs/protocol.md';document.getElementById('lnkRes').href=base+'/blob/main/docs/results.md';
+ document.getElementById('lnkCode').href=base;document.getElementById('lnkIssue').href=base+'/issues';}}
+const zoom=d3.zoom().scaleExtent([1,40]).on('zoom',e=>{g.attr('transform',e.transform);drawOverlay(e.transform);const nk=e.transform.k;if(Math.abs(nk-k)/k>.05){k=nk;drawPoints()}updScale(e.transform);placePop(false)});
+svg.call(zoom);
+function updScale(t){const W=box.clientWidth;const a=proj.invert([(W/2-t.x)/t.k,(box.clientHeight/2-t.y)/t.k]);const b=proj.invert([(W/2+100-t.x)/t.k,(box.clientHeight/2-t.y)/t.k]);if(!a||!b)return;const km=d3.geoDistance(a,b)*6371;document.getElementById('scale').textContent=`100 px ≈ ${km<10?km.toFixed(1):Math.round(km)} km`}
+function view(name){
+ const W=box.clientWidth,H=box.clientHeight;
+ const ex={all:[[18,2],[119,-42]],search:[[88,-24],[103,-40]],debris:[[20,-3],[66,-36]],likely:[[90.6,-32.9],[95.4,-36.6]]}[name];
+ const [[x0,y0],[x1,y1]]=[proj(ex[0]),proj(ex[1])];
+ const sc=Math.min(W/(x1-x0),H/(y1-y0))*.95;
+ const t=d3.zoomIdentity.translate(W/2-sc*(x0+x1)/2,H/2-sc*(y0+y1)/2).scale(sc);
+ svg.transition().duration(matchMedia('(prefers-reduced-motion: reduce)').matches?0:650).call(zoom.transform,t);
+ document.querySelectorAll('[data-view]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.view===name));
+ if(name==='likely'){for(const l of ['hpd','gap18']){layers[l]=false;const cb=document.querySelector(`[data-l=${l}]`);if(cb)cb.checked=false}layers.top=true;document.querySelector('[data-l=top]').checked=true;applyLayers()}
+}
+document.querySelectorAll('[data-view]').forEach(b=>b.addEventListener('click',()=>view(b.dataset.view)));
+document.getElementById('zin').onclick=()=>svg.transition().call(zoom.scaleBy,1.6);
+document.getElementById('zout').onclick=()=>svg.transition().call(zoom.scaleBy,1/1.6);
+document.querySelectorAll('[data-l]').forEach(c=>c.addEventListener('change',()=>{layers[c.dataset.l]=c.checked;applyLayers();drawOverlay(d3.zoomTransform(svg.node()))}));
+slider.addEventListener('input',()=>{maxDate=dates[+slider.value];drawPoints()});
+
+const counts={};debris.forEach(d=>counts[d.c]=(counts[d.c]||0)+1);
+document.getElementById('cls').innerHTML=order.map(c=>`<label class="lay"><input type="checkbox" data-c="${c}" checked><span class="dot" style="background:${CLS[c][1]}"></span>${CLS[c][0]} <span class="muted">(${counts[c]||0})</span></label>`).join('');
+document.querySelectorAll('[data-c]').forEach(c=>c.addEventListener('change',()=>{c.checked?on.add(c.dataset.c):on.delete(c.dataset.c);drawPoints()}));
+
+document.getElementById('tbl').innerHTML=debris.slice().sort((a,b)=>a.dt-b.dt).map(d=>`<tr><td class="num">${d.n}</td><td class="date">${d.d}</td><td>${d.part}</td><td>${d.site}</td><td><span class="tag"><span class="dot" style="background:${CLS[d.c][1]}"></span>${CLS[d.c][0]}</span></td></tr>`).join('');
+
+{const btn=document.getElementById('thm'),root=document.documentElement;
+ let saved=null;try{saved=localStorage.getItem('mh370-theme')}catch(e){}
+ const cur=()=>root.dataset.theme||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');
+ const lbl=()=>{const d=cur()==='dark';btn.textContent=d?'☀ Light mode':'☾ Dark mode';btn.setAttribute('aria-label',d?'Switch to light mode':'Switch to dark mode')};
+ if(saved)root.dataset.theme=saved;lbl();
+ btn.onclick=()=>{const n=cur()==='dark'?'light':'dark';root.dataset.theme=n;try{localStorage.setItem('mh370-theme',n)}catch(e){}lbl()};
+ matchMedia('(prefers-color-scheme: dark)').addEventListener('change',lbl);}
+const ro=new ResizeObserver(()=>{render();updScale(d3.zoomTransform(svg.node()));placePop(false)});ro.observe(box);
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change',render);
+new MutationObserver(render).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+}
+</script>
+</body>
+</html>
