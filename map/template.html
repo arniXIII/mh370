@@ -252,7 +252,8 @@ function render(){
 }
 function drawPoints(){
  buildSites();
- const s=1/Math.sqrt(k), lep=proj([93.7875,-34.2342]);
+ const s=Math.min(Math.sqrt(k),2)/k, lep=   // markers grow a little when zooming in, then stay a fixed size
+ proj([93.7875,-34.2342]);
  gLink.selectAll('*').remove();
  gLink.selectAll('line').data(sites).join('line').attr('x1',d=>proj([d.lon,d.lat])[0]).attr('y1',d=>proj([d.lon,d.lat])[1]).attr('x2',lep[0]).attr('y2',lep[1]).attr('stroke',css('--arc')).attr('stroke-opacity',.35).attr('stroke-dasharray','2 4').attr('vector-effect','non-scaling-stroke');
  gDeb.selectAll('circle').data(sites,d=>d.site).join('circle')
@@ -267,7 +268,7 @@ function drawPoints(){
  }
  gShip.selectAll('circle').data(PTS.ships).join('circle').attr('cx',d=>proj([d.lon,d.lat])[0]).attr('cy',d=>proj([d.lon,d.lat])[1]).attr('r',4*s).attr('fill',css('--oi25')).attr('stroke',css('--card')).attr('stroke-width',s).style('cursor','pointer').on('click',(e,d)=>info(`<div class="t">${d.name}</div><div>${ll(d.lat,d.lon)}</div><div class="muted" style="margin-top:6px">From ship-tracking data quoted in blog comments; the vessel was deploying or recovering AUVs.</div>`));
  gLbl.selectAll('*').remove();
- const labels=[[93.79,-34.23,'LEP'],[99.93,-29.13,'WSPR']];
+ const labels=[[93.79,-34.23,'LEP'],[99.93,-29.13,'WSPR'],[107.92,-8.36,'Anderson']];
  if(k>2.2)for(const [lo,la,t] of labels){const [x,y]=proj([lo,la]);gLbl.append('text').attr('x',x+8*s).attr('y',y-6*s).attr('font-size',12*s).attr('font-weight',600).attr('fill',css('--ink')).attr('paint-order','stroke').attr('stroke',css('--sea')).attr('stroke-width',3*s).text(t)}
  applyLayers();
  document.getElementById('dateLbl').textContent=fmt(maxDate)+` (${sites.reduce((a,s)=>a+s.items.length,0)} items)`;
@@ -361,7 +362,7 @@ runTable();
 {const h=location.hostname;if(h.endsWith('github.io')){const user=h.split('.')[0],repo=location.pathname.split('/').filter(Boolean)[0]||'';const base=`https://github.com/${user}/${repo}`;
  document.getElementById('lnkProto').href=base+'/blob/main/docs/protocol.md';document.getElementById('lnkRes').href=base+'/blob/main/docs/results.md';
  document.getElementById('lnkCode').href=base;document.getElementById('lnkIssue').href=base+'/issues';}}
-const zoom=d3.zoom().scaleExtent([1,40]).on('zoom',e=>{g.attr('transform',e.transform);drawOverlay(e.transform);const nk=e.transform.k;if(Math.abs(nk-k)/k>.05){k=nk;drawPoints()}updScale(e.transform);placePop(false)});
+const zoom=d3.zoom().scaleExtent([1,300]).on('zoom',e=>{g.attr('transform',e.transform);drawOverlay(e.transform);const nk=e.transform.k;if(Math.abs(nk-k)/k>.05){k=nk;drawPoints()}updScale(e.transform);placePop(false)});
 svg.call(zoom);
 function updScale(t){const W=box.clientWidth;const a=proj.invert([(W/2-t.x)/t.k,(box.clientHeight/2-t.y)/t.k]);const b=proj.invert([(W/2+100-t.x)/t.k,(box.clientHeight/2-t.y)/t.k]);if(!a||!b)return;const km=d3.geoDistance(a,b)*6371;document.getElementById('scale').textContent=`100 px ≈ ${km<10?km.toFixed(1):Math.round(km)} km`}
 function view(name){

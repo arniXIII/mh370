@@ -44,7 +44,7 @@ if __name__ == '__main__':
     sat = fit()
     (OUT / 'sat.json').write_text(json.dumps(sat, indent=1))
     print('satellite fit', sat)
-    la = np.arange(-19, -40.501, -0.1); lo = arc_points(sat, H_ARC, la)
+    la = np.arange(-8, -40.501, -0.1); lo = arc_points(sat, H_ARC, la)
     lu = np.arange(-28, -33.001, -0.1); lou = arc_points(sat, H_ARC, lu)
     geo = {'arc': [[round(float(x), 3), round(float(y), 3)] for x, y in zip(lo, la)],
            'uwa': [[round(float(x), 3), round(float(y), 3)] for x, y in zip(lou, lu)]}
