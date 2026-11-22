@@ -1,6 +1,6 @@
-# MH370 residual-probability map — v1.0
+# MH370 residual-probability map — v1.1
 
-**Version 1.0 · 20 November 2026 · Independent analysis, not peer-reviewed.**
+**Version 1.1 · 22 November 2026 · Independent analysis, not peer-reviewed.**
 
 ![Overview: searched seabed along the 7th arc, debris finds and the most likely area](docs/overview.png)
 
@@ -15,16 +15,18 @@ An interactive map and a reproducible Bayesian calculation of where MH370 could 
 
 | Region | Area (km²) | Prior | Posterior |
 |---|---:|---:|---:|
-| R1 – OI remaining contract area (2025-26 zone not yet searched) | 8,006 | 0.6% | 2.4% |
-| R2 – likely gaps inside the 2018 OI area | 13,436 | 1.6% | 6.2% |
-| R3 – never searched, within 25 NM of the arc | 70,680 | 2.3% | 8.8% |
-| R4 – never searched, 25–100 NM from the arc | 741,450 | 12.2% | 46.6% |
-| R5 – searched cells (imperfect detection) | 244,801 | 83.3% | 36.0% |
+| R1 – OI remaining contract area (2025-26 zone not yet searched) | 8,006 | 0.6% | 2.5% |
+| R2 – likely gaps inside the 2018 OI area | 13,436 | 1.6% | 6.4% |
+| R3 – never searched, within 25 NM of the arc | 70,534 | 2.1% | 8.3% |
+| R4 – never searched, 25–100 NM from the arc | 741,450 | 12.2% | 48.0% |
+| R5 – searched cells (imperfect detection) | 244,947 | 83.5% | 34.8% |
 
-- Probability that every completed search missed the aircraft (given the model): 26.1%.
-- R1 holds 2.4%; the best unsearched area of equal size elsewhere holds 12.3%. Under this model, R1 is not the best next place to search.
-- The result depends mostly on the end-of-flight assumption (glide vs. no glide) and the along-arc prior. Thirteen sensitivity runs are included and selectable on the map.
-- Exploratory addendum: the highest-probability 10,000 km² holds 13.2% (7.6–28.8% across runs). Its most robust part is near 34.2°S 93.5°E, close to the UGIB 2020 estimate. See the addendum in the results.
+- Probability that every completed search missed the aircraft (given the model): 25.3%.
+- R1 holds 2.5%; the best area of equal size elsewhere holds 11.3%. Under this model, R1 is not the best next place to search.
+- The result depends mostly on the end-of-flight assumption (glide vs. no glide) and the along-arc prior. Fourteen sensitivity runs are included and selectable on the map.
+- Exploratory addendum: the highest-probability 10,000 km² holds 12.3% (7.4–27.4% across runs). Its most robust part is near 34.0°S 93.7°E, just north of the UGIB 2020 estimate. See the addendum in the results.
+
+**v1.1 (22 Nov 2026):** adds the February 2025 fill-in pass of Armada 78 06 (34–35°S), which v1.0 missed. Run S13 reproduces v1.0. Details in [docs/results.md](docs/results.md).
 
 Read [docs/results.md](docs/results.md) for the full answers, sensitivity table and limitations.
 

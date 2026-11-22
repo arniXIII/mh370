@@ -39,7 +39,7 @@ PD = {'deeptow': (0.90, 0.75, 0.50), 'sas': (0.90, 0.80, 0.60), 'auv': (0.90, 0.
 R18, R18S, R25 = 25.2, 34.4, 4.2
 
 
-def miss_prob(pd_scale=None, pd_up=False, gaps='likely', buf25=R25, march=True):
+def miss_prob(pd_scale=None, pd_up=False, gaps='likely', buf25=R25, march=True, fillin=True):
     cls = z['slope'].astype(int); cls = np.where(cls == 9, 1, cls)      # no bathymetry -> moderate (change log)
     def d(key):
         v = np.array(PD[key])[cls]
@@ -56,6 +56,7 @@ def miss_prob(pd_scale=None, pd_up=False, gaps='likely', buf25=R25, march=True):
     m *= np.where(cov18, 1 - d('oi18'), 1)
     cov25 = z['zb'] & (z['d25b'] <= buf25)
     if march: cov25 = cov25 | (z['zb'] & (z['d25a'] <= buf25))
+    if fillin: cov25 = cov25 | (z['d25f'] <= buf25)          # Feb 2025 fill-in, added in v1.1
     m *= np.where(cov25, 1 - d('oi25'), 1)
     return m, cov18, cov25
 
@@ -81,6 +82,7 @@ RUNS = [
     ('S8', '2018 gaps treated as searched', {'gaps': 'none'}), ('S9', 'Only strong 2018 gaps', {'gaps': 'strong'}),
     ('S10a', '2025 band 3.0 km', {'buf25': 3.0}), ('S10b', '2025 band 6.0 km', {'buf25': 6.0}),
     ('S11', 'March 2025 excluded', {'march': False}), ('S12', 'Arc at sea level', {'arc': 'h0'}),
+    ('S13', 'Feb 2025 fill-in ignored (as v1.0)', {'fillin': False}),
 ]
 
 

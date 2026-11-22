@@ -6,7 +6,7 @@ import urllib.request
 from common import CAPTION
 
 BASE = 'https://raw.githubusercontent.com/trise5631/trise5631.github.io/main/'
-FILES = ['areas3.js', 'sc1.js', 'sc2.js', 'sc3.js', 'sc4.js', 'phase2.js', 'phase3.js']
+FILES = ['areas3.js', 'sc1.js', 'sc2.js', 'sc3.js', 'sc4.js', 'phase1.js', 'phase2.js', 'phase3.js']
 
 if __name__ == '__main__':
     CAPTION.mkdir(parents=True, exist_ok=True)
