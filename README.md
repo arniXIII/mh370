@@ -1,6 +1,6 @@
-# MH370 residual-probability map — v1.1
+# MH370 residual-probability map — v1.2
 
-**Version 1.1 · 22 November 2026 · Independent analysis, not peer-reviewed.**
+**Version 1.2 · 22 November 2026 · Independent analysis, not peer-reviewed.**
 
 ![Overview: searched seabed along the 7th arc, debris finds and the most likely area](docs/overview.png)
 
@@ -18,15 +18,17 @@ An interactive map and a reproducible Bayesian calculation of where MH370 could 
 | R1 – OI remaining contract area (2025-26 zone not yet searched) | 8,006 | 0.6% | 2.5% |
 | R2 – likely gaps inside the 2018 OI area | 13,436 | 1.6% | 6.4% |
 | R3 – never searched, within 25 NM of the arc | 70,534 | 2.1% | 8.3% |
-| R4 – never searched, 25–100 NM from the arc | 741,450 | 12.2% | 48.0% |
-| R5 – searched cells (imperfect detection) | 244,947 | 83.5% | 34.8% |
+| R4 – never searched, 25–100 NM from the arc | 739,308 | 12.1% | 47.7% |
+| R5 – searched cells (imperfect detection) | 247,088 | 83.6% | 35.0% |
 
 - Probability that every completed search missed the aircraft (given the model): 25.3%.
-- R1 holds 2.5%; the best area of equal size elsewhere holds 11.3%. Under this model, R1 is not the best next place to search.
-- The result depends mostly on the end-of-flight assumption (glide vs. no glide) and the along-arc prior. Fourteen sensitivity runs are included and selectable on the map.
-- Exploratory addendum: the highest-probability 10,000 km² holds 12.3% (7.4–27.4% across runs). Its most robust part is near 34.0°S 93.7°E, just north of the UGIB 2020 estimate. See the addendum in the results.
+- R1 holds 2.5%; the best area of equal size elsewhere holds 11.4%. Under this model, R1 is not the best next place to search.
+- The result depends mostly on the end-of-flight assumption (glide vs. no glide) and the along-arc prior. Fifteen sensitivity runs are included and selectable on the map.
+- Exploratory addendum: the highest-probability 10,000 km² holds 12.4% (7.4–27.4% across runs). Its most robust part is near 34.0°S 93.7°E, just north of the UGIB 2020 estimate. See the addendum in the results.
 
-**v1.1 (22 Nov 2026):** adds the February 2025 fill-in pass of Armada 78 06 (34–35°S), which v1.0 missed. Run S13 reproduces v1.0. Details in [docs/results.md](docs/results.md).
+**v1.1 (22 Nov 2026):** adds the February 2025 fill-in pass of Armada 78 06 (34–35°S), which v1.0 missed. Run S13 reproduces v1.0.
+
+**v1.2 (22 Nov 2026):** counts all 2025–26 work hours in the search region, not only those inside the 2024 zone (+~2,300 km²). Details in [docs/results.md](docs/results.md).
 
 Read [docs/results.md](docs/results.md) for the full answers, sensitivity table and limitations.
 

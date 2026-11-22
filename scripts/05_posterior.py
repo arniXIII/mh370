@@ -4,7 +4,7 @@ Outputs: out/results.json (region masses per run), out/posterior_runs.geojson.js
 out/post_primary.npy, out/prior_primary.npy.
 Also an exploratory addendum (after v1.0 results): the highest-density 10,000 km2 per run and the cells that are in it in >= 10 of 14 runs.
 """
-import json
+import json, math
 import numpy as np
 from common import DERIVED, OUT, boxes_union, feature
 
@@ -39,7 +39,7 @@ PD = {'deeptow': (0.90, 0.75, 0.50), 'sas': (0.90, 0.80, 0.60), 'auv': (0.90, 0.
 R18, R18S, R25 = 25.2, 34.4, 4.2
 
 
-def miss_prob(pd_scale=None, pd_up=False, gaps='likely', buf25=R25, march=True, fillin=True):
+def miss_prob(pd_scale=None, pd_up=False, gaps='likely', buf25=R25, march=True, fillin=True, outside=True, jan_outside=True):
     cls = z['slope'].astype(int); cls = np.where(cls == 9, 1, cls)      # no bathymetry -> moderate (change log)
     def d(key):
         v = np.array(PD[key])[cls]
@@ -54,9 +54,13 @@ def miss_prob(pd_scale=None, pd_up=False, gaps='likely', buf25=R25, march=True, 
     env = z['oi18_env']
     cov18 = env & (z['d18'] <= R18) if gaps == 'likely' else env & (z['d18'] <= R18S) if gaps == 'strong' else env
     m *= np.where(cov18, 1 - d('oi18'), 1)
-    cov25 = z['zb'] & (z['d25b'] <= buf25)
-    if march: cov25 = cov25 | (z['zb'] & (z['d25a'] <= buf25))
-    if fillin: cov25 = cov25 | (z['d25f'] <= buf25)          # Feb 2025 fill-in, added in v1.1
+    # 2025-26: v1.0 counted only positions inside the proposed zone; v1.1 added the Feb fill-in; v1.2 counts all work positions
+    zb = z['zb']
+    cov25 = zb & (z['d25b'] <= buf25)
+    if march: cov25 = cov25 | (zb & (z['d25a'] <= buf25))
+    if outside and jan_outside: cov25 = cov25 | (~zb & (z['d25bx'] <= buf25))
+    if outside and march: cov25 = cov25 | (~zb & (z['d25ax'] <= buf25))
+    if fillin: cov25 = cov25 | (z['d25f'] <= buf25)
     m *= np.where(cov25, 1 - d('oi25'), 1)
     return m, cov18, cov25
 
@@ -82,7 +86,8 @@ RUNS = [
     ('S8', '2018 gaps treated as searched', {'gaps': 'none'}), ('S9', 'Only strong 2018 gaps', {'gaps': 'strong'}),
     ('S10a', '2025 band 3.0 km', {'buf25': 3.0}), ('S10b', '2025 band 6.0 km', {'buf25': 6.0}),
     ('S11', 'March 2025 excluded', {'march': False}), ('S12', 'Arc at sea level', {'arc': 'h0'}),
-    ('S13', 'Feb 2025 fill-in ignored (as v1.0)', {'fillin': False}),
+    ('S13', '2025-26 coverage as in v1.0', {'fillin': False, 'outside': False}),
+    ('S14', 'Dec-Jan work outside zone ignored', {'jan_outside': False}),
 ]
 
 
@@ -97,7 +102,7 @@ def hpd_features(post, run_id):
 
 
 TOP_KM2 = 10000      # exploratory addendum (not in protocol v1.0): size of the "most likely area"
-CORE_MIN_RUNS = 10   # a cell is in the robust core if it is in the top area in at least this many of the 14 runs
+CORE_SHARE = 0.7     # a cell is in the robust core if it is in the top area in at least 70% of the runs (10 of 14 in v1.0)
 
 
 def top_area(post):
@@ -141,7 +146,7 @@ if __name__ == '__main__':
         m = r['mass']
         print(f"{rid:<5} {label:<30} R1 {m['R1']:.3f} R2 {m['R2']:.3f} R3 {m['R3']:.3f} R4 {m['R4']:.3f} R5 {m['R5']:.3f} "
               f"best-equal-area {r['best_equal_area_elsewhere']:.3f} P(all missed) {r['p_all_missed']:.3f}")
-    core = count >= CORE_MIN_RUNS
+    core_min = math.ceil(CORE_SHARE * len(RUNS)); core = count >= core_min
     from scipy import ndimage
     lab, n = ndimage.label(core, structure=np.ones((3, 3)))
     lat4 = -22 - 0.04 * (np.arange(500) + 0.5); lon4 = 82 + 0.04 * (np.arange(600) + 0.5)
@@ -151,7 +156,7 @@ if __name__ == '__main__':
         blocks.append({'area_km2': float(AA[c].sum()), 'mass_primary': float(P4_primary[c].sum()),
                        'lat': float(lat4[ii].mean()), 'lon': float(lon4[jj].mean())})
     blocks.sort(key=lambda b: -b['mass_primary'])
-    core_info = {'top_km2': TOP_KM2, 'min_runs': CORE_MIN_RUNS, 'n_runs': len(RUNS),
+    core_info = {'top_km2': TOP_KM2, 'min_runs': core_min, 'n_runs': len(RUNS),
                  'area_km2': float(AA[core].sum()), 'mass_primary': float(P4_primary[core].sum()), 'blocks': blocks[:5]}
     feats.append(feature(boxes_union(core, 82.0, -22.0, 0.04).simplify(0.01), {'layer': 'core', 'run': 'all'}))
     print(f"robust core: {core_info['area_km2']:.0f} km2, primary mass {core_info['mass_primary']:.3f}; main block {blocks[0]}")

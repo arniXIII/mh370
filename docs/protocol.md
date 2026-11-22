@@ -128,6 +128,7 @@ Deviations made while computing, after the freeze. None changes a prior, a weigh
 | 20 Nov 2026 | Searched cells without Phase 1 bathymetry (≈37,000 km²) treated as moderate terrain | Rule was not specified in v1.0 |
 | 20 Nov 2026 | Question 3 answered literally (clusters of the top ten cells), plus 50/80/95% highest-probability areas reported | Ten 0.02° cells cannot reach 10%; the literal question was poorly specified |
 | 22 Nov 2026 | v1.1: Feb 2025 fill-in pass of Armada 78 06 (23–28 Feb, 34–35°S) added to the 2025–26 coverage with the same ±4.2 km rule; run S13 keeps the v1.0 coverage | The pass was missed in v1.0 (pointed out by a reader); it re-searched gaps of earlier searches |
+| 22 Nov 2026 | v1.2: 2025–26 coverage counts all work hours (first to last slow position of each voyage) in the search region, not only inside the 2024 zone; run S14 drops the Jan 2026 hours outside the zone; robust core threshold set to 70% of runs | Same cause as the v1.1 miss; work outside the zone was not counted |
 
 ## Sources
 

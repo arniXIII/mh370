@@ -53,6 +53,17 @@ def track_rows(files, t0=None, t1=None):
     return [r for r in rows if (t0 is None or r[0] >= t0) and (t1 is None or r[0] <= t1)]
 
 
+SIO_BOX = shapely.box(88.0, -40.0, 100.0, -28.0)
+
+
+def work_window(rows, box, slow_kmh=8.0):
+    """Rows between the first and last hour in `box` at which the ship moved slower than slow_kmh."""
+    def km(a, b):
+        return math.hypot((a[2] - b[2]) * 111.32 * math.cos(math.radians(a[1])), (a[1] - b[1]) * 110.57)
+    slow = [i for i, (a, b) in enumerate(zip(rows, rows[1:])) if box.contains(Point(a[2], a[1])) and km(a, b) < slow_kmh]
+    return rows[slow[0]:slow[-1] + 2]
+
+
 def track_points(rows, near):
     pts = []
     for p, q in zip(rows, rows[1:]):
@@ -102,33 +113,39 @@ if __name__ == '__main__':
     sc = track_rows(['sc1.js', 'sc2.js', 'sc3.js', 'sc4.js'])
     p18 = track_points(sc, env18.buffer(0.3))
     z['d18'] = dist_to(p18).astype(np.float32)
-    rows_b = track_rows(['phase3.js'], '2025-12-30', '2026-01-24'); rows_a = track_rows(['phase2.js'], '2025-03-09', '2025-03-30')
-    z['d25b'] = dist_to(track_points(rows_b, zb)).astype(np.float32)
-    z['d25a'] = dist_to(track_points(rows_a, zb)).astype(np.float32)
-    # Feb 2025 fill-in (added in v1.1): Armada 78 06 worked 34-35S on gaps and low-quality data of earlier searches
-    fill_box = shapely.box(91.5, -36.0, 95.5, -33.5)
-    rows_f = track_rows(['phase1.js'], '2025-02-23 17:00Z', '2025-02-28 00:00Z')
-    z['d25f'] = dist_to(track_points(rows_f, fill_box)).astype(np.float32)
+    # 2025-26 coverage (v1.2): every hour between the first and last slow (< 8 km/h, AUV launch/recovery) position of each
+    # voyage inside the search region counts, inside or outside the 2024 proposed zone. v1.0 used only positions inside the zone.
+    rows_f, rows_a, rows_b = (work_window(track_rows([f]), SIO_BOX) for f in ('phase1.js', 'phase2.js', 'phase3.js'))
+    print('work windows:', *(f"{r[0][0]} - {r[-1][0]}" for r in (rows_f, rows_a, rows_b)), sep='\n  ')
+    z['d25f'] = dist_to(track_points(rows_f, SIO_BOX)).astype(np.float32)          # Feb 2025 fill-in (added in v1.1)
+    z['d25ax'] = dist_to(track_points(rows_a, SIO_BOX)).astype(np.float32)         # March 2025, whole region (v1.2)
+    z['d25bx'] = dist_to(track_points(rows_b, SIO_BOX)).astype(np.float32)         # Dec 2025 - Jan 2026, whole region (v1.2)
+    # inside the zone, unchanged from v1.0 (these windows fix the calibration of R_2025_KM)
+    za, zbr = track_rows(['phase2.js'], '2025-03-09', '2025-03-30'), track_rows(['phase3.js'], '2025-12-30', '2026-01-24')
+    z['d25a'] = dist_to(track_points(za, zb)).astype(np.float32)
+    z['d25b'] = dist_to(track_points(zbr, zb)).astype(np.float32)
     z['cell_km2'] = CELL.astype(np.float32); z['X'] = X.astype(np.float32); z['Y'] = Y.astype(np.float32)
     np.savez_compressed(OUT / 'inputs.npz', **z)
 
     env = z['oi18_env']
     print(f"OI 2018 envelope minus ATSB: {CELL[env].sum():,.0f} km2; within {R_2018_KM} km of track: {CELL[env & (z['d18'] <= R_2018_KM)].sum():,.0f} km2 (reported 112,000)")
     cb = z['zb'] & (z['d25b'] <= R_2025_KM); ca = z['zb'] & (z['d25a'] <= R_2025_KM)
+    cax = ca | (~z['zb'] & (z['d25ax'] <= R_2025_KM)); cbx = cb | (~z['zb'] & (z['d25bx'] <= R_2025_KM))
     cf = z['d25f'] <= R_2025_KM
     print(f"OI Feb 2025 fill-in: {CELL[cf].sum():,.0f} km2 within {R_2025_KM} km of the ship (not reported by OI)")
+    print(f"Outside the 2024 zone: March 2025 {CELL[cax & ~z['zb']].sum():,.0f} km2, Dec-Jan {CELL[cbx & ~z['zb']].sum():,.0f} km2")
     print(f"OI 2025-26: Dec-Jan {CELL[cb].sum():,.0f} km2 (reported ~7,200); March {CELL[ca].sum():,.0f} km2; zone {CELL[z['oi25_zone']].sum():,.0f} km2; zone left {CELL[z['oi25_zone'] & ~(ca | cb)].sum():,.0f} km2 (official remaining 7,429)")
 
     # map layers
     to_poly = lambda m: boxes_union(m, LON0, LAT1, D).simplify(0.008, preserve_topology=True)
-    tr = lambda rows: LineString([(r[2], r[1]) for r in rows if zb.contains(Point(r[2], r[1]))]).simplify(0.003)
+    tr = lambda rows: LineString([(r[2], r[1]) for r in rows if SIO_BOX.contains(Point(r[2], r[1]))]).simplify(0.003)
     save_fc(OUT / 'oi_coverage.geojson', [
         feature(oi18.simplify(0.01), {'layer': 'oi2018'}),
         feature(zone.simplify(0.005), {'layer': 'oi2025zone'}),
-        feature(to_poly(ca), {'layer': 'oi2025p1'}), feature(to_poly(cb), {'layer': 'oi2025p2'}),
+        feature(to_poly(cax), {'layer': 'oi2025p1'}), feature(to_poly(cbx), {'layer': 'oi2025p2'}),
         feature(tr(rows_a), {'layer': 'track2025p1'}), feature(tr(rows_b), {'layer': 'track2025p2'}),
         feature(to_poly(cf), {'layer': 'oi2025p0'}),
-        feature(LineString([(r[2], r[1]) for r in rows_f if fill_box.contains(Point(r[2], r[1]))]).simplify(0.003), {'layer': 'track2025p0'})])
+        feature(tr(rows_f), {'layer': 'track2025p0'})])
     gap = env & (z['d18'] > R_2018_KM); strong = env & (z['d18'] > R_2018_STRONG_KM)
     print(f'OI 2018 likely gaps {CELL[gap].sum():,.0f} km2, strong {CELL[strong].sum():,.0f} km2')
     save_fc(OUT / 'oi2018_gaps.geojson', [feature(boxes_union(gap & ~strong, LON0, LAT1, D).simplify(0.01), {'layer': 'gap2018'}),
